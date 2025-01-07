@@ -5,7 +5,7 @@ pool:
   vmImage: 'windows-latest'  # Use 'ubuntu-latest' for Linux if preferred
 
 variables:
-  PYTHON_VERSION: '3.x'  # Replace with the specific Python version required
+  PYTHON_VERSION: '3.9'  # Replace with the specific Python version required
 
 steps:
 # Step 1: Check out the code from the repository
