@@ -1,54 +1,23 @@
 trigger:
-- main  # Automatically runs the pipeline on changes to the main branch
+- main
 
 pool:
-  vmImage: 'windows-latest'  # Use 'ubuntu-latest' for Linux if preferred
+  vmImage: 'windows-latest'
 
 variables:
-  PYTHON_VERSION: '3.9'  # Replace with the specific Python version required
+  PYTHON_VERSION: '3.9'  # Ensure this matches your project's Python version
 
 steps:
-# Step 1: Check out the code from the repository
-- task: Checkout@1
-  displayName: "Checkout Code"
-
-# Step 2: Install the required Python version
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: $(PYTHON_VERSION)
+    versionSpec: $(PYTHON_VERSION)  # This variable must exist
     addToPath: true
-  displayName: "Set Python Version"
 
-# Step 3: Install Python dependencies
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: "Install Dependencies"
 
-# Step 4: Install Node.js (required for Appium)
-- task: NodeTool@0
-  inputs:
-    versionSpec: '16.x'  # Replace with the Node.js version required
-  displayName: "Install Node.js"
-
-# Step 5: Install Appium
-- script: |
-    appium --version || npm install -g appium
-  displayName: "Install Appium"
-
-# Step 6: Start Appium Server
-- script: |
-    npx appium --log-level error --address 127.0.0.1 --port 4723 &
-  displayName: "Start Appium Server"
-
-# Step 7: Run Appium Tests
 - script: |
     python -m unittest discover -s tests -p "*.py"
   displayName: "Run Tests"
-
-# Optional Step: Publish Test Results
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: '**/TEST-*.xml'
-    searchFolder: '$(System.DefaultWorkingDirectory)'
-  displayName: "Publish Test Results"
