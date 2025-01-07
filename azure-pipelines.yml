@@ -14,10 +14,11 @@ steps:
     addToPath: true
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: "Install Dependencies"
-
-- script: |
-    python -m unittest discover -s tests -p "*.py"
+    python -m unittest discover -s TestCases -p "test_*.py" -v
   displayName: "Run Tests"
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/TEST-*.xml'
+    testRunTitle: 'AppiumPython Test Results'
+  displayName: "Publish Test Results"
