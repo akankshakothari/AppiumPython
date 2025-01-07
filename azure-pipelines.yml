@@ -19,11 +19,8 @@ steps:
     pip install -r requirements.txt
   displayName: "Install Dependencies"
 
-- script: mkdir excel
-  displayName: "Create Excel Directory"
-
 - script: |
-    copy $(System.DefaultWorkingDirectory)/excel/testdata.xlsx ./excel/testdata.xlsx
+    copy $(System.DefaultWorkingDirectory)/path/to/your/testdata.xlsx $(Build.ArtifactStagingDirectory)/excel/testdata.xlsx
   displayName: "Copy Test Data File"
 
 - script: |
