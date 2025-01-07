@@ -5,13 +5,14 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  PYTHON_VERSION: '3.9'  # Ensure this matches your project's Python version
+  PYTHON_VERSION: '3.9'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: $(PYTHON_VERSION)  # This variable must exist
+    versionSpec: $(PYTHON_VERSION)
     addToPath: true
+  displayName: "Set Python Version"
 
 - script: |
     python -m pip install --upgrade pip
@@ -19,11 +20,15 @@ steps:
   displayName: "Install Dependencies"
 
 - script: |
-    python -m unittest discover -s TestCases -p "test_*.py" -v
-  displayName: "Run Tests"
+    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
+  displayName: "Set PYTHONPATH"
+
+- script: |
+    pytest TestCases --junitxml=TestResults/test-results.xml
+  displayName: "Run Tests with Pytest"
 
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: '**/TEST-*.xml'
+    testResultsFiles: 'TestResults/test-results.xml'
     testRunTitle: 'AppiumPython Test Results'
   displayName: "Publish Test Results"
