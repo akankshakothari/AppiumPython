@@ -1,8 +1,10 @@
 import os
 import logging
+import time
 
 class Logger:
     def __init__(self, name, level):
+        # Use time.strftime to generate a log file name with the current date
         self.LogFileName = os.path.join(os.getcwd(), "Logs", f"log{time.strftime('%Y-%m-%d')}.txt")
         os.makedirs(os.path.dirname(self.LogFileName), exist_ok=True)  # Ensure the Logs directory exists
         self.logger = logging.getLogger(name)
