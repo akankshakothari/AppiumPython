@@ -20,11 +20,6 @@ steps:
   displayName: "Install Dependencies"
 
 - script: |
-    if not exist "$(Build.ArtifactStagingDirectory)\excel" mkdir "$(Build.ArtifactStagingDirectory)\excel"
-    copy "$(System.DefaultWorkingDirectory)\path\to\your\testdata.xlsx" "$(Build.ArtifactStagingDirectory)\excel\testdata.xlsx"
-  displayName: "Copy Test Data File"
-
-- script: |
     echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
   displayName: "Set PYTHONPATH"
 
