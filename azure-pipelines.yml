@@ -20,7 +20,8 @@ steps:
   displayName: "Install Dependencies"
 
 - script: |
-    copy $(System.DefaultWorkingDirectory)/path/to/your/testdata.xlsx $(Build.ArtifactStagingDirectory)/excel/testdata.xlsx
+    if not exist "$(Build.ArtifactStagingDirectory)\excel" mkdir "$(Build.ArtifactStagingDirectory)\excel"
+    copy "$(System.DefaultWorkingDirectory)\path\to\your\testdata.xlsx" "$(Build.ArtifactStagingDirectory)\excel\testdata.xlsx"
   displayName: "Copy Test Data File"
 
 - script: |
