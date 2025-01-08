@@ -80,23 +80,11 @@ steps:
 - script: |
     npm install -g appium
     appium driver install uiautomator2
-    where appium
-    appium -v
-    ls -la
   displayName: 'Install Appium and Android driver'
+
 
 - script: |
-    where appium
-    appium -v
-    ls -la
-  displayName: 'Install Appium and Android driver'
-
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Start Appium server on port 4723
-      Start-Process -NoNewWindow -FilePath "appium" -ArgumentList "--port", "4723", "--log-level", "debug" -PassThru
+    Start-Process -NoNewWindow -FilePath "C:\npm\prefix\appium.cmd" -ArgumentList "--port", "4723", "--log-level", "debug" -PassThru
   displayName: 'Start Appium Server'
 
 - script: |
