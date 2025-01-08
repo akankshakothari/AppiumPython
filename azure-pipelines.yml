@@ -10,7 +10,6 @@ variables:
   DEVICE_NAME: "Android Emulator"
   PLATFORM_NAME: "Android"
   PLATFORM_VERSION: "11"
-  # Instead of using $(PATH) directly in the PATH, just reference the Android tools explicitly
   CUSTOM_PATH: $(ANDROID_HOME)\tools;$(ANDROID_HOME)\platform-tools
 
 steps:
@@ -45,9 +44,14 @@ steps:
       # Install OpenJDK 11 and download Android SDK tools
       choco install openjdk11
       Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
-      Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)
-      & "$(ANDROID_HOME)\cmdline-tools\bin\sdkmanager" --licenses
-      & "$(ANDROID_HOME)\cmdline-tools\bin\sdkmanager" "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+      
+      # Create the necessary directories and move files into place
+      New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
+      Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
+
+      # Accept licenses and install Android components
+      & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager" --licenses
+      & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager" "platform-tools" "platforms;android-30" "build-tools;30.0.3"
   displayName: 'Install Android SDK and JDK'
 
 - script: |
