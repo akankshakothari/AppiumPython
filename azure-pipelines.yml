@@ -51,12 +51,17 @@ steps:
       New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
       Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
 
+      # Move cmdline-tools to the correct location (if needed)
+      if (Test-Path "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools") {
+        Move-Item "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools" "$(ANDROID_HOME)\cmdline-tools\latest"
+      }
+
       # Check if sdkmanager exists in the correct location
-      $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools\bin\sdkmanager.bat"
+      $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.bat"
       if (Test-Path $sdkmanagerPath) {
         Write-Host "sdkmanager found, running sdkmanager..."
-        & $sdkmanagerPath --licenses
-        & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
+        & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
       } else {
         Write-Host "sdkmanager not found at $sdkmanagerPath. Trying to download sdkmanager directly."
         
@@ -68,8 +73,8 @@ steps:
         $sdkmanagerPath = "$(ANDROID_HOME)\tools\bin\sdkmanager.bat"
         if (Test-Path $sdkmanagerPath) {
           Write-Host "sdkmanager found in tools directory, running sdkmanager..."
-          & $sdkmanagerPath --licenses
-          & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+          & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
+          & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
         } else {
           Write-Host "sdkmanager not found after downloading both versions."
           exit 1
