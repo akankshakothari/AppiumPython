@@ -13,73 +13,74 @@ variables:
   CUSTOM_PATH: $(ANDROID_HOME)\tools;$(ANDROID_HOME)\platform-tools
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    addToPath: true
-  displayName: "Set Python Version"
+# - task: UsePythonVersion@0
+#   inputs:
+#     versionSpec: '3.x'
+#     addToPath: true
+#   displayName: "Set Python Version"
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: "Install Dependencies"
+# - script: |
+#     python -m pip install --upgrade pip
+#     pip install -r requirements.txt
+#   displayName: "Install Dependencies"
 
-- script: |
-    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
-  displayName: "Set PYTHONPATH"
+# - script: |
+#     echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
+#   displayName: "Set PYTHONPATH"
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Install Chocolatey if not installed
-      Set-ExecutionPolicy Bypass -Scope Process -Force; 
-      iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-  displayName: 'Install Chocolatey'
+# - task: PowerShell@2
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       # Install Chocolatey if not installed
+#       Set-ExecutionPolicy Bypass -Scope Process -Force; 
+#       iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+#   displayName: 'Install Chocolatey'
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Install OpenJDK 11
-      choco install openjdk11
+# - task: PowerShell@2
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       # Install OpenJDK 11
+#       choco install openjdk11
       
-      # Download Android SDK command line tools if not already downloaded
-      Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
+#       # Download Android SDK command line tools if not already downloaded
+#       Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
       
-      # Extract the command line tools
-      New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
-      Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
+#       # Extract the command line tools
+#       New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
+#       Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
 
-      # Check if sdkmanager exists in the correct location
-      $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.bat"
-      if (Test-Path $sdkmanagerPath) {
-        Write-Host "sdkmanager found, running sdkmanager..."
-        & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
-        & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
-      } else {
-        Write-Host "sdkmanager not found at $(ANDROID_HOME)\cmdline-tools\latest\bin. Trying to download sdkmanager directly."
+#       # Check if sdkmanager exists in the correct location
+#       $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.bat"
+#       if (Test-Path $sdkmanagerPath) {
+#         Write-Host "sdkmanager found, running sdkmanager..."
+#         & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
+#         & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
+#       } else {
+#         Write-Host "sdkmanager not found at $(ANDROID_HOME)\cmdline-tools\latest\bin. Trying to download sdkmanager directly."
         
-        # If sdkmanager is still not found, download it separately
-        Invoke-WebRequest -Uri "https://dl.google.com/android/repository/sdk-tools-windows-4333796.zip" -OutFile "sdk-tools.zip"
-        Expand-Archive -Path sdk-tools.zip -DestinationPath $(ANDROID_HOME)
+#         # If sdkmanager is still not found, download it separately
+#         Invoke-WebRequest -Uri "https://dl.google.com/android/repository/sdk-tools-windows-4333796.zip" -OutFile "sdk-tools.zip"
+#         Expand-Archive -Path sdk-tools.zip -DestinationPath $(ANDROID_HOME)
         
-        # Retry to run sdkmanager from the new location
-        $sdkmanagerPath = "$(ANDROID_HOME)\tools\bin\sdkmanager.bat"
-        if (Test-Path $sdkmanagerPath) {
-          Write-Host "sdkmanager found in tools directory, running sdkmanager..."
-          & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
-          & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
-        } else {
-          Write-Host "sdkmanager not found after downloading both versions."
-          exit 1
-        }
-      }
-  displayName: 'Install Android SDK and JDK'
+#         # Retry to run sdkmanager from the new location
+#         $sdkmanagerPath = "$(ANDROID_HOME)\tools\bin\sdkmanager.bat"
+#         if (Test-Path $sdkmanagerPath) {
+#           Write-Host "sdkmanager found in tools directory, running sdkmanager..."
+#           & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
+#           & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
+#         } else {
+#           Write-Host "sdkmanager not found after downloading both versions."
+#           exit 1
+#         }
+#       }
+#   displayName: 'Install Android SDK and JDK'
 
 - script: |
     npm install -g appium
     appium driver install uiautomator2
+    where appium
   displayName: 'Install Appium and Android driver'
 
 - task: PowerShell@2
