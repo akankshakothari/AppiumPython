@@ -41,26 +41,39 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      # Install OpenJDK 11 and download Android SDK tools
+      # Install OpenJDK 11
       choco install openjdk11
+      
+      # Download Android SDK command line tools if not already downloaded
       Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
       
-      # Create the necessary directories
+      # Extract the command line tools
       New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
       Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
 
-      # Check the contents of the extracted cmdline-tools folder to ensure sdkmanager is present
-      Write-Host "Listing contents of $(ANDROID_HOME)/cmdline-tools/latest/"
-      Get-ChildItem -Recurse -Path $(ANDROID_HOME)/cmdline-tools/latest/
-      
-      # Check for sdkmanager and run it
-      if (Test-Path "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe") {
+      # Check if sdkmanager exists in the correct location
+      $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools\bin\sdkmanager.bat"
+      if (Test-Path $sdkmanagerPath) {
         Write-Host "sdkmanager found, running sdkmanager..."
-        & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe" --licenses
-        & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe" "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        & $sdkmanagerPath --licenses
+        & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3"
       } else {
-        Write-Host "sdkmanager not found at $(ANDROID_HOME)\cmdline-tools\latest\bin\"
-        exit 1
+        Write-Host "sdkmanager not found at $sdkmanagerPath. Trying to download sdkmanager directly."
+        
+        # If sdkmanager is still not found, download it separately
+        Invoke-WebRequest -Uri "https://dl.google.com/android/repository/sdk-tools-windows-4333796.zip" -OutFile "sdk-tools.zip"
+        Expand-Archive -Path sdk-tools.zip -DestinationPath $(ANDROID_HOME)
+        
+        # Retry to run sdkmanager from the new location
+        $sdkmanagerPath = "$(ANDROID_HOME)\tools\bin\sdkmanager.bat"
+        if (Test-Path $sdkmanagerPath) {
+          Write-Host "sdkmanager found in tools directory, running sdkmanager..."
+          & $sdkmanagerPath --licenses
+          & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+        } else {
+          Write-Host "sdkmanager not found after downloading both versions."
+          exit 1
+        }
       }
   displayName: 'Install Android SDK and JDK'
 
