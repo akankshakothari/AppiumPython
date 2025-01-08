@@ -45,17 +45,21 @@ steps:
       choco install openjdk11
       Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
       
-      # Create the necessary directories and move files into place
+      # Create the necessary directories
       New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
       Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
 
-      # Check if sdkmanager exists and run it
+      # Check the contents of the extracted cmdline-tools folder to ensure sdkmanager is present
+      Write-Host "Listing contents of $(ANDROID_HOME)/cmdline-tools/latest/"
+      Get-ChildItem -Recurse -Path $(ANDROID_HOME)/cmdline-tools/latest/
+      
+      # Check for sdkmanager and run it
       if (Test-Path "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe") {
         Write-Host "sdkmanager found, running sdkmanager..."
         & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe" --licenses
         & "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.exe" "platform-tools" "platforms;android-30" "build-tools;30.0.3"
       } else {
-        Write-Host "sdkmanager not found at expected path."
+        Write-Host "sdkmanager not found at $(ANDROID_HOME)\cmdline-tools\latest\bin\"
         exit 1
       }
   displayName: 'Install Android SDK and JDK'
