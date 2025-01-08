@@ -7,7 +7,7 @@ pool:
 variables:
   PYTHON_VERSION: '3.9'
   ANDROID_HOME: $(System.DefaultWorkingDirectory)/android-sdk-linux
-  PATH: $(ANDROID_HOME)/tools:$(ANDROID_HOME)/platform-tools:$(PATH)
+  PATH: $(ANDROID_HOME)/tools:$(ANDROID_HOME)/platform-tools
   APPIUM_PORT: 4723
   DEVICE_NAME: "Android Emulator"
   PLATFORM_NAME: "Android"
@@ -31,8 +31,11 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
+    pip install virtualenv
+    virtualenv venv
+    source venv/bin/activate
     pip install -r requirements.txt
-  displayName: "Install Dependencies"
+  displayName: "Install Dependencies in Virtualenv"
 
 - script: |
     npm install -g appium
@@ -40,13 +43,13 @@ steps:
   displayName: 'Install Appium and Android driver'
 
 - script: |
-    # Start Appium server
-    appium -ka 4723 --log-level debug > appium.log 2>&1 &
+    # Start Appium server and ensure it is fully running
+    nohup appium -ka 4723 --log-level debug > appium.log 2>&1 &
+    sleep 10  # Give Appium some time to fully start
   displayName: 'Start Appium Server'
 
 - script: |
     # Run tests using pytest
-    export DISPLAY=:0
     pytest TestCases --junitxml=TestResults/test-results.xml
   displayName: 'Run Appium Tests'
 
@@ -54,8 +57,3 @@ steps:
   inputs:
     testResultsFiles: '**/test-*.xml'
     testRunTitle: 'Appium Tests'
-
-
-
-
-
