@@ -82,9 +82,11 @@ steps:
     appium driver install uiautomator2
   displayName: 'Install Appium and Android driver'
 
-
-- script: |
-    Start-Process -NoNewWindow -FilePath "C:\npm\prefix\appium.cmd" -ArgumentList "--port", "4723", "--log-level", "debug" -PassThru
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Start-Process -NoNewWindow -FilePath "C:\npm\prefix\appium.cmd" -ArgumentList "--port", "4723", "--log-level", "debug" -PassThru
   displayName: 'Start Appium Server'
 
 - script: |
