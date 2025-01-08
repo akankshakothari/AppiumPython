@@ -2,10 +2,16 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   PYTHON_VERSION: '3.9'
+  ANDROID_HOME: $(System.DefaultWorkingDirectory)/android-sdk-linux
+  PATH: $(ANDROID_HOME)/tools:$(ANDROID_HOME)/platform-tools:$(PATH)
+  APPIUM_PORT: 4723
+  DEVICE_NAME: "Android Emulator"
+  PLATFORM_NAME: "Android"
+  PLATFORM_VERSION: "11"
 
 steps:
 - task: UsePythonVersion@0
@@ -14,32 +20,42 @@ steps:
     addToPath: true
   displayName: "Set Python Version"
 
-# - task: Npm@1
-#   inputs:
-#     command: 'install'
-
 - script: |
-    npm i --location=global appium
-    appium
-  displayName: "Install Appium"
+    sudo apt update
+    sudo apt install -y openjdk-11-jdk
+    curl -sL https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -o android-tools.zip
+    unzip android-tools.zip -d $(ANDROID_HOME)
+    yes | $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager --licenses
+    $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+  displayName: 'Install Android SDK'
 
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: "Install Dependencies"
 
+- script: |
+    npm install -g appium
+    appium driver install uiautomator2
+  displayName: 'Install Appium and Android driver'
 
 - script: |
-    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
-  displayName: "Set PYTHONPATH"
+    # Start Appium server
+    appium -ka 4723 --log-level debug > appium.log 2>&1 &
+  displayName: 'Start Appium Server'
 
 - script: |
-    ls -la
+    # Run tests using pytest
+    export DISPLAY=:0
     pytest TestCases --junitxml=TestResults/test-results.xml
-  displayName: "Run Tests with Pytest"
+  displayName: 'Run Appium Tests'
 
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: 'TestResults/test-results.xml'
-    testRunTitle: 'AppiumPython Test Results'
-  displayName: "Publish Test Results"
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Appium Tests'
+
+
+
+
+
