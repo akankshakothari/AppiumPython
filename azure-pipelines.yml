@@ -2,12 +2,11 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'windows-latest'  # Use a Windows-based VM
 
 variables:
-  PYTHON_VERSION: '3.9'
-  ANDROID_HOME: $(System.DefaultWorkingDirectory)/android-sdk-linux
-  PATH: $(ANDROID_HOME)/tools:$(ANDROID_HOME)/platform-tools
+  ANDROID_HOME: $(System.DefaultWorkingDirectory)/android-sdk-windows
+  PATH: $(ANDROID_HOME)/tools:$(ANDROID_HOME)/platform-tools:$(PATH)
   APPIUM_PORT: 4723
   DEVICE_NAME: "Android Emulator"
   PLATFORM_NAME: "Android"
@@ -16,26 +15,33 @@ variables:
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: $(PYTHON_VERSION)
+    versionSpec: '3.x'
     addToPath: true
   displayName: "Set Python Version"
 
 - script: |
-      sudo apt update
-      sudo apt install -y openjdk-11-jdk
-      curl -sL https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -o android-tools.zip
-      unzip android-tools.zip -d $(ANDROID_HOME)
-      yes | $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager --licenses
-      $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
-  displayName: 'Install Android SDK'
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: "Install Dependencies"
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install virtualenv
-    virtualenv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-  displayName: "Install Dependencies in Virtualenv"
+    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
+  displayName: "Set PYTHONPATH"
+
+- script: |
+    # Install Chocolatey if not installed
+    Set-ExecutionPolicy Bypass -Scope Process -Force; 
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  displayName: 'Install Chocolatey'
+
+- script: |
+    # Install OpenJDK 11 and download Android SDK tools
+    choco install openjdk11
+    Invoke-WebRequest -Uri "https://dl.google.com/android/repository/commandlinetools-win-7583922_latest.zip" -OutFile "android-tools.zip"
+    Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)
+    & "$(ANDROID_HOME)\cmdline-tools\bin\sdkmanager" --licenses
+    & "$(ANDROID_HOME)\cmdline-tools\bin\sdkmanager" "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+  displayName: 'Install Android SDK and JDK'
 
 - script: |
     npm install -g appium
@@ -43,14 +49,13 @@ steps:
   displayName: 'Install Appium and Android driver'
 
 - script: |
-    # Start Appium server and ensure it is fully running
-    nohup appium -ka 4723 --log-level debug > appium.log 2>&1 &
-    sleep 10  # Give Appium some time to fully start
+    # Start Appium server
+    Start-Process -NoNewWindow -FilePath "appium" -ArgumentList "--port", "4723", "--log-level", "debug"
   displayName: 'Start Appium Server'
 
 - script: |
     # Run tests using pytest
-    pytest TestCases --junitxml=TestResults/test-results.xml
+    python -m unittest discover -s TestCases -p "test_*.py" -v
   displayName: 'Run Appium Tests'
 
 - task: PublishTestResults@2
