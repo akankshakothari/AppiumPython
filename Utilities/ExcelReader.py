@@ -26,7 +26,7 @@ def setCellData(path, sheetName, rowNum, colNum, data):
     workbook.save(path)
 
 
-path = "testdata.xlsx"
+path = "Excel/testdata.xlsx"
 sheetName = "LoginTest"
 
 rows = getRowCount(path,sheetName)
