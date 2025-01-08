@@ -13,29 +13,29 @@ variables:
   CUSTOM_PATH: $(ANDROID_HOME)\tools;$(ANDROID_HOME)\platform-tools
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    addToPath: true
-  displayName: "Set Python Version"
+# - task: UsePythonVersion@0
+#   inputs:
+#     versionSpec: '3.x'
+#     addToPath: true
+#   displayName: "Set Python Version"
 
 # - script: |
 #     python -m pip install --upgrade pip
 #     pip install -r requirements.txt
 #   displayName: "Install Dependencies"
 
-- script: |
-    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
-  displayName: "Set PYTHONPATH"
+# - script: |
+#     echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
+#   displayName: "Set PYTHONPATH"
 
-- task: PowerShell@2
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Install Chocolatey if not installed
-      Set-ExecutionPolicy Bypass -Scope Process -Force; 
-      iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-  displayName: 'Install Chocolatey'
+# - task: PowerShell@2
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       # Install Chocolatey if not installed
+#       Set-ExecutionPolicy Bypass -Scope Process -Force; 
+#       iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+#   displayName: 'Install Chocolatey'
 
 - task: PowerShell@2
   inputs:
@@ -51,11 +51,6 @@ steps:
       New-Item -ItemType Directory -Force -Path $(ANDROID_HOME)/cmdline-tools
       Expand-Archive -Path android-tools.zip -DestinationPath $(ANDROID_HOME)/cmdline-tools/latest
 
-      # Move cmdline-tools to the correct location (if needed)
-      if (Test-Path "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools") {
-        Move-Item "$(ANDROID_HOME)\cmdline-tools\latest\cmdline-tools" "$(ANDROID_HOME)\cmdline-tools\latest"
-      }
-
       # Check if sdkmanager exists in the correct location
       $sdkmanagerPath = "$(ANDROID_HOME)\cmdline-tools\latest\bin\sdkmanager.bat"
       if (Test-Path $sdkmanagerPath) {
@@ -63,7 +58,7 @@ steps:
         & $sdkmanagerPath --licenses --sdk_root=$(ANDROID_HOME)
         & $sdkmanagerPath "platform-tools" "platforms;android-30" "build-tools;30.0.3" --sdk_root=$(ANDROID_HOME)
       } else {
-        Write-Host "sdkmanager not found at $sdkmanagerPath. Trying to download sdkmanager directly."
+        Write-Host "sdkmanager not found at $(ANDROID_HOME)\cmdline-tools\latest\bin. Trying to download sdkmanager directly."
         
         # If sdkmanager is still not found, download it separately
         Invoke-WebRequest -Uri "https://dl.google.com/android/repository/sdk-tools-windows-4333796.zip" -OutFile "sdk-tools.zip"
