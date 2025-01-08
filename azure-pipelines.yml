@@ -13,29 +13,29 @@ variables:
   CUSTOM_PATH: $(ANDROID_HOME)\tools;$(ANDROID_HOME)\platform-tools
 
 steps:
-# - task: UsePythonVersion@0
-#   inputs:
-#     versionSpec: '3.x'
-#     addToPath: true
-#   displayName: "Set Python Version"
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+  displayName: "Set Python Version"
 
-# - script: |
-#     python -m pip install --upgrade pip
-#     pip install -r requirements.txt
-#   displayName: "Install Dependencies"
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: "Install Dependencies"
 
-# - script: |
-#     echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
-#   displayName: "Set PYTHONPATH"
+- script: |
+    echo "##vso[task.setvariable variable=PYTHONPATH]$(System.DefaultWorkingDirectory)"
+  displayName: "Set PYTHONPATH"
 
-# - task: PowerShell@2
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       # Install Chocolatey if not installed
-#       Set-ExecutionPolicy Bypass -Scope Process -Force; 
-#       iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-#   displayName: 'Install Chocolatey'
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Install Chocolatey if not installed
+      Set-ExecutionPolicy Bypass -Scope Process -Force; 
+      iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  displayName: 'Install Chocolatey'
 
 - task: PowerShell@2
   inputs:
@@ -82,9 +82,12 @@ steps:
     appium driver install uiautomator2
   displayName: 'Install Appium and Android driver'
 
-- script: |
-    # Start Appium server
-    Start-Process -NoNewWindow -FilePath "appium" -ArgumentList "--port", "4723", "--log-level", "debug"
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Start Appium server on port 4723
+      Start-Process -NoNewWindow -FilePath "appium" -ArgumentList "--port", "4723", "--log-level", "debug" -PassThru
   displayName: 'Start Appium Server'
 
 - script: |
