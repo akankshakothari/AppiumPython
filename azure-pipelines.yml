@@ -25,6 +25,7 @@ steps:
   displayName: "Set PYTHONPATH"
 
 - script: |
+    ls -la
     pytest TestCases --junitxml=TestResults/test-results.xml
   displayName: "Run Tests with Pytest"
 
