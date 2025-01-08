@@ -20,13 +20,15 @@ steps:
     addToPath: true
   displayName: "Set Python Version"
 
-- script: |
-    sudo apt update
-    sudo apt install -y openjdk-11-jdk
-    curl -sL https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -o android-tools.zip
-    unzip android-tools.zip -d $(ANDROID_HOME)
-    yes | $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager --licenses
-    $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+- task: CmdLine@2
+  inputs:
+    script: |
+      sudo apt update
+          sudo apt install -y openjdk-11-jdk
+          curl -sL https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -o android-tools.zip
+          unzip android-tools.zip -d $(ANDROID_HOME)
+          yes | $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager --licenses
+          $(ANDROID_HOME)/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
   displayName: 'Install Android SDK'
 
 - script: |
